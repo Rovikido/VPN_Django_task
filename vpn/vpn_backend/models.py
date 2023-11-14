@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 class Website(models.Model):
@@ -12,4 +13,4 @@ class Website(models.Model):
 class Statistics(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     website = models.OneToOneField(Website, on_delete=models.CASCADE)
-    page_views = models.IntegerField(default=0, null=False, validators=[models.MinValueValidator(0)])
+    page_views = models.IntegerField(default=0, null=False, validators=[MinValueValidator(0)])
