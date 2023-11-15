@@ -2,12 +2,13 @@ from rest_framework import serializers
 from .models import User, Website, Statistics
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(style={'input_type':'email'}, required=False)
     password = serializers.CharField(style={'input_type':'password'}, write_only=True)
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['username', 'email', 'password']
 
-class SiteSerializer(serializers.ModelSerializer):
+class WebsiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Website
         fields = '__all__'
