@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponse, StreamingHttpResponse
-from vpn_backend.utils import make_proxy_request, replace_internal_links, check_for_vpn_use
+from vpn_backend.utils import make_proxy_request, replace_internal_links, check_name_for_vpn_use
 from urllib.parse import urlparse
 from decimal import Decimal
 
@@ -105,7 +105,6 @@ class WebsiteCreateView(generics.CreateAPIView):
             url = urlparse(serializer.validated_data['url']).netloc
         existing_website = Website.objects.filter(url=url, user=self.request.user).first()
         if existing_website:
-            print('Found website')
             existing_website.name = serializer.validated_data.get('name', existing_website.name)
             existing_website.save()
         else:
@@ -117,11 +116,12 @@ class VPNView(View):
         if not request.user.is_authenticated:
             return HttpResponse("User not authenticated", status=401)
         user_site_domain = urlparse(f'https://{user_site}').netloc
-        if not check_for_vpn_use(request.user, user_site_domain):
+        print(user_site_domain)
+        if not check_name_for_vpn_use(request.user, user_site_domain):
             original_site_url = f'https://{user_site_domain}'
-            return redirect(original_site_url)
+            return redirect(f'https://www.google.com/search?q={original_site_url}')
 
-        website = get_object_or_404(Website, user=request.user, url=user_site_domain)
+        website = get_object_or_404(Website, user=request.user, name=user_site_domain)
         return self.process_vpn_request(request, website)
 
     def process_vpn_request(self, request, website):
@@ -131,11 +131,12 @@ class VPNView(View):
         except Statistics.DoesNotExist:
             statistics = Statistics.objects.create(user=request.user, website=website, page_views=1)
 
-        sub_url = (request.path.split(f"/vpn/{website.url}", 1)[-1])[:-1] # [:-1] to remove extra slash 
+        sub_url = (request.path.split(f"/vpn/{website.name}", 1)[-1])[:-1] # [:-1] to remove extra slash 
+        print(sub_url)
         original_site_url = f'https://{website.url}{sub_url}'
         proxy_response = make_proxy_request(original_site_url)
         try:
-            proxy_response_content = replace_internal_links(proxy_response.content, request.user, website.url, sub_url)
+            proxy_response_content = replace_internal_links(proxy_response.content, request.user, website.name, sub_url)
         except AttributeError:
             proxy_response_content = proxy_response
 

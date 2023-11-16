@@ -1,5 +1,4 @@
 import requests
-import re
 from bs4 import BeautifulSoup
 from .models import Website
 from urllib.parse import urlparse
@@ -19,10 +18,17 @@ def is_full_url(path):
     return "https://" in path
 
 
-def check_for_vpn_use(user, user_site_domain):
+def check_link_for_vpn_use(user, user_site_domain):
     try:
         Website.objects.get(user=user, url=user_site_domain)
-        print('Found website')
+        return True
+    except Website.DoesNotExist:
+        return False
+    
+
+def check_name_for_vpn_use(user, name):
+    try:
+        Website.objects.get(user=user, name=name)
         return True
     except Website.DoesNotExist:
         return False
@@ -36,7 +42,7 @@ def replace_internal_links(content, user, website_domain, sub_url):
         if not original_link:
             continue
         if parsed_link.netloc == urlparse(f'https://{website_domain}').netloc or not is_full_url(original_link):
-            if check_for_vpn_use(user, parsed_link) or is_common_web_format(original_link) or not is_full_url(original_link):
+            if check_link_for_vpn_use(user, parsed_link) or is_common_web_format(original_link) or not is_full_url(original_link):
                 
                 if not is_full_url(original_link):
                     new_link = f'/vpn/{website_domain}{original_link}'
