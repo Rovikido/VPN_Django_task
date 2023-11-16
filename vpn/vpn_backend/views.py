@@ -1,11 +1,11 @@
 from rest_framework import generics, permissions, status, serializers
-from rest_framework.views import APIView
+from rest_framework.views import APIView, View
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from vpn_backend.utils import make_proxy_request, replace_internal_links, check_for_vpn_use
 from urllib.parse import urlparse
 from decimal import Decimal
@@ -112,18 +112,15 @@ class WebsiteCreateView(generics.CreateAPIView):
             serializer.save(url=url, user=self.request.user)
 
 
-class VPNView(APIView):
+class VPNView(View):
     def get(self, request, user_site):
         if not request.user.is_authenticated:
-            return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        user_site_domain = user_site
-        print(user_site_domain)
+            return HttpResponse("User not authenticated", status=401)
         user_site_domain = urlparse(f'https://{user_site}').netloc
         if not check_for_vpn_use(request.user, user_site_domain):
             original_site_url = f'https://{user_site_domain}'
             return redirect(original_site_url)
-        
+
         website = get_object_or_404(Website, user=request.user, url=user_site_domain)
         return self.process_vpn_request(request, website)
 
@@ -134,10 +131,20 @@ class VPNView(APIView):
         except Statistics.DoesNotExist:
             statistics = Statistics.objects.create(user=request.user, website=website, page_views=1)
 
-        original_site_url = f'https://{website.url}{(request.path.split(f"/vpn/{website.url}", 1)[-1])[:-1]}' # [:-1] to remove extra slash 
+        sub_url = (request.path.split(f"/vpn/{website.url}", 1)[-1])[:-1] # [:-1] to remove extra slash 
+        original_site_url = f'https://{website.url}{sub_url}'
         proxy_response = make_proxy_request(original_site_url)
-        proxy_response_content = replace_internal_links(proxy_response.content, website, request.user)
+        try:
+            proxy_response_content = replace_internal_links(proxy_response.content, request.user, website.url, sub_url)
+        except AttributeError:
+            proxy_response_content = proxy_response
 
+        def streaming_content_generator():
+            yield proxy_response_content
+
+        response = StreamingHttpResponse(streaming_content_generator(), content_type='text/html; charset=utf-8')
+        
         statistics.data_transferred += Decimal(len(proxy_response_content)) / Decimal(1024 * 1024)
         statistics.save()
-        return HttpResponse(proxy_response_content, content_type='text/html; charset=utf-8')
+
+        return response

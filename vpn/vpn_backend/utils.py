@@ -5,19 +5,18 @@ from .models import Website
 from urllib.parse import urlparse
 
 
-def replace_internal_links(content, website, user):
-    soup = BeautifulSoup(content, 'html.parser')
-    for tag in soup.find_all(['a', 'link', 'script'], href=True):
-        original_link = tag.get('href') or tag.get('src')
-        parsed_link = urlparse(original_link)
-        if parsed_link.netloc == urlparse(website.url).netloc:
-            if check_for_vpn_use(user, original_link):
-                new_link = f'/vpn/{website.url}{parsed_link.path}'
-                if tag.has_attr('href'):
-                    tag['href'] = new_link
+def is_common_web_format(path):
+    common_formats = ['.php', '.svg', '.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.pdf']
+    return any(path.endswith(format) for format in common_formats)
 
-    modified_content = str(soup)
-    return modified_content
+
+def is_special_link(path):
+    special_chars=['?', '#']
+    return path[0] in special_chars
+
+
+def is_full_url(path):
+    return "https://" in path
 
 
 def check_for_vpn_use(user, user_site_domain):
@@ -26,7 +25,32 @@ def check_for_vpn_use(user, user_site_domain):
         print('Found website')
         return True
     except Website.DoesNotExist:
-        return True
+        return False
+
+
+def replace_internal_links(content, user, website_domain, sub_url):
+    soup = BeautifulSoup(content, 'html.parser')
+    for tag in soup.find_all(['a'], href=True):
+        original_link = tag.get('href')
+        parsed_link = urlparse(original_link)
+        if not original_link:
+            continue
+        if parsed_link.netloc == urlparse(f'https://{website_domain}').netloc or not is_full_url(original_link):
+            if check_for_vpn_use(user, parsed_link) or is_common_web_format(original_link) or not is_full_url(original_link):
+                
+                if not is_full_url(original_link):
+                    new_link = f'/vpn/{website_domain}{original_link}'
+                    if is_special_link(original_link):
+                        new_link = f'/vpn/{website_domain}{sub_url}{original_link}'
+                else:   
+                    new_link = original_link
+                if tag.has_attr('href'):
+                    tag['href'] = new_link
+                elif tag.has_attr('src'):
+                    tag['src'] = new_link
+
+    modified_content = str(soup)
+    return modified_content
 
 
 def make_proxy_request(url):
