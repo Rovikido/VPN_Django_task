@@ -31,5 +31,5 @@ Dockerized vpn application for task
    Go to http://localhost:8000/
 
 You may use already created user with  <br />
-username: "test_user"
+username: "test_user" <br />
 password: "abcbca11"
