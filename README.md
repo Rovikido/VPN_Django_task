@@ -27,5 +27,5 @@ Dockerized vpn application
    docker-compose up
    ```
 
-5. **Open app:**
+5. **Open app:** <br />
    Go to http://localhost:8000/ 
