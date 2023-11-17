@@ -137,29 +137,6 @@ class UserUpdateViewAlternative(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form, 'user': request.user})
 
 
-# class UserUpdateViewAlternative(LoginRequiredMixin, View):
-#     template_name = 'update_user.html'
-#     success_template_name = 'update_success.html'
-
-#     def get(self, request, *args, **kwargs):
-#         form = UserUpdateForm(instance=request.user)
-#         return render(request, self.template_name, {'form': form, 'user': request.user})
-
-#     def post(self, request, *args, **kwargs):
-#         form = UserUpdateForm(request.POST, instance=request.user)
-#         if form.is_valid():
-#             if 'password' in form.cleaned_data:
-#                 current_password = form.cleaned_data.pop('password')
-#                 if not request.user.check_password(current_password):
-#                     messages.error(request, 'Incorrect current password.')
-#                     return render(request, self.template_name, {'form': form, 'user': request.user})
-#                 update_session_auth_hash(request, form.instance)
-#             form.save()
-#             messages.success(request, 'User successfully updated.')
-#             return render(request, self.success_template_name, {'user': request.user})
-#         return render(request, self.template_name, {'form': form, 'user': request.user})
-
-
 class UserLogoutViewAlternative(View):
     def get(self, request, *args, **kwargs):
         logout(request)
