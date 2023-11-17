@@ -2,7 +2,7 @@
 
 ## Overview
 
-Dockerized vpn application
+Dockerized vpn application for task
 
 ## Instalation
 
@@ -28,4 +28,8 @@ Dockerized vpn application
    ```
 
 5. **Open app:** <br />
-   Go to http://localhost:8000/ 
+   Go to http://localhost:8000/
+
+You may use already created user with  <br />
+username: "test_user"
+password: "abcbca11"
