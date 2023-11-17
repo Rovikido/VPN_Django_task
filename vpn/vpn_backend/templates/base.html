@@ -1,0 +1,39 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Django App{% endblock %}</title>
+    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' rel='stylesheet'>
+    <link href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="{% static 'views/style.css' %}">
+    <script src="{% static 'views/overlay.js' %}"></script>
+    <script src="{% static 'views/utils.js' %}"></script>
+    <!-- Add your common stylesheets or other head elements here -->
+</head>
+<body>
+    <header>
+        <div class="topnav">
+            <a href="/websites/">Websites</a>
+            <a href="/statistics/">Statisic</a>
+        
+            {% if user.is_authenticated %}
+                <a href="/update-user/">Account</a>
+                <a href="/logout/">Logout</a>
+            {% else %}
+                <a href="/login/">Login</a>
+                <a href="/register/">Register</a>
+            {% endif %}
+        </div>
+        
+    </header>
+
+    <main>
+        <div class="block-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</body>
+</html>

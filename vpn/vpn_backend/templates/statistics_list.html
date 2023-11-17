@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Statistics</h2>
+  <ul>
+    {% for stat in statistics %}
+      <li>{{ stat.website.name }} - Page Views: {{ stat.page_views }}, Data Transferred: {{ stat.data_transferred }} MB</li>
+    {% endfor %}
+  </ul>
+{% endblock %}  

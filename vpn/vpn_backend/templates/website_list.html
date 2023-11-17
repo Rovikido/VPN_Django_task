@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Websites</h2>
+  <ul>
+    {% for website in websites %}
+      <li><a href="{% url 'vpn-view' user_site=website.name %}" style="margin-right: 10px;">{{ website.name }} </a> — 
+        <a style="margin-left: 10px; font-size: 10px;" href="{% url 'website-detail' pk=website.pk %}"> Details</a></li>
+    {% endfor %}
+  </ul>
+  <a href="/websites/create/">
+    <button>Create Website</button>
+  </a>
+
+{% endblock %}
