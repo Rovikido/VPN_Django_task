@@ -15,7 +15,7 @@ from vpn_backend.views_alternative import *
 
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     # path('api/register/', UserRegistrationView.as_view(), name='api-user-register'),
     # path('api/login/', UserLoginView.as_view(), name='api-user-login'),
     # path('api/logout/', UserLogoutView.as_view(), name='api-user-logout'),
@@ -34,4 +34,5 @@ urlpatterns = [
     path('websites/', WebsiteListViewAlternative.as_view(), name='website-list'),
     path('websites/<int:pk>/', WebsiteDetailViewAlternative.as_view(), name='website-detail'),
     path('websites/create/', WebsiteCreateViewAlternative.as_view(), name='create-website'),
+    path('', WebsiteListViewAlternative.as_view(), name='home'),
 ]
