@@ -116,7 +116,6 @@ class VPNView(View):
         if not request.user.is_authenticated:
             return HttpResponse("User not authenticated", status=401)
         user_site_domain = urlparse(f'https://{user_site}').netloc
-        print(user_site_domain)
         if not check_name_for_vpn_use(request.user, user_site_domain):
             original_site_url = f'https://{user_site_domain}'
             return redirect(f'https://www.google.com/search?q={original_site_url}')
